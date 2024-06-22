@@ -9,48 +9,58 @@ import createMarkup from './js/render-functions.js';
 const key = '44447356-a60fa6f4c2d7f10e895940a18';
 const form = document.querySelector('.form');
 const list = document.querySelector('.list');
+const button = document.querySelector('.loadMoreBtn');
+const loader = document.querySelector('.loader');
+const perPage = 15;
+
+let pageNumber = 1;
+let text = '';
 
 form.addEventListener('submit', searchHandler);
+button.addEventListener('click', addGallery);
 
 function searchHandler(evt) {
+  button.style.display = 'none';
   list.innerHTML = '';
-  const text = evt.target.elements.input.value.trim();
+  text = evt.target.elements.input.value.trim();
   evt.preventDefault();
   if (text != 0) {
-    form.insertAdjacentHTML('afterend', '<span class="loader"></span>');
-    const loader = document.querySelector('.loader');
-    httpRequest(key, text)
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(response.status);
-        }
-        return response.json();
-      })
-      .then(data => {
-        const photos = data.hits;
-        if (photos.length !== 0) {
-          list.insertAdjacentHTML('beforeend', createMarkup(photos));
-          const lightbox = new SimpleLightbox('.list a', {
-            captions: true,
-            captionType: 'attr',
-            captionsData: 'alt',
-            captionPosition: 'bottom',
-            captionDelay: 250,
-          });
-          lightbox.refresh();
+    loader.style.display = 'block';
+    pageNumber = 1;
+    getGalleryItems();
+  }
+}
+function addGallery() {
+  loader.style.display = 'block';
+  pageNumber += 1;
+  getGalleryItems();
+}
+function getGalleryItems() {
+  httpRequest(key, text, pageNumber, perPage)
+    .then(response => {
+      const photos = response.hits;
+      if (photos.length !== 0) {
+        list.insertAdjacentHTML('beforeend', createMarkup(photos));
+        if (response.totalHits > perPage * pageNumber) {
+          button.style.display = 'block';
         } else {
+          button.style.display = 'none';
           iziToast.show({
             class: 'toast',
             position: 'topRight',
-            icon: 'icon',
-            iconUrl: err,
-            iconColor: 'white',
             messageColor: 'white',
-            message: `Sorry, there are no images matching your search query. Please try again!`,
+            message: `We're sorry, but you've reached the end of search results.`,
           });
         }
-      })
-      .catch(error => {
+        const lightbox = new SimpleLightbox('.list a', {
+          captions: true,
+          captionType: 'attr',
+          captionsData: 'alt',
+          captionPosition: 'bottom',
+          captionDelay: 250,
+        });
+        lightbox.refresh();
+      } else {
         iziToast.show({
           class: 'toast',
           position: 'topRight',
@@ -58,19 +68,37 @@ function searchHandler(evt) {
           iconUrl: err,
           iconColor: 'white',
           messageColor: 'white',
-          title: 'Error',
-          titleColor: 'white',
-          message: `Please try again!`,
+          message: `Sorry, there are no images matching your search query. Please try again!`,
         });
-        if (error.response) {
-          console.error('Server error:', error.response.status);
-        } else if (error.request) {
-          console.error('No response from server');
-        } else {
-          console.error('Unknown error:', error.message);
-        }
-      })
-      .finally(() => (loader.style.display = 'none'));
-    form.reset();
-  }
+      }
+    })
+    .catch(error => {
+      iziToast.show({
+        class: 'toast',
+        position: 'topRight',
+        icon: 'icon',
+        iconUrl: err,
+        iconColor: 'white',
+        messageColor: 'white',
+        title: 'Error',
+        titleColor: 'white',
+        message: `Please try again!`,
+      });
+      if (error.response) {
+        console.error('Server error:', error.response.status);
+      } else if (error.request) {
+        console.error('No response from server');
+      } else {
+        console.error('Unknown error:', error.message);
+      }
+    })
+    .finally(() => {
+      const cardSizes = list.lastChild.getBoundingClientRect();
+      scrollBy({
+        top: cardSizes.top + cardSizes.height * 2,
+        behavior: 'smooth',
+      });
+      loader.style.display = 'none';
+    });
+  form.reset();
 }

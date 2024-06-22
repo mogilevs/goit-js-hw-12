@@ -57,6 +57,7 @@ ul {
   display: flex;
   flex-wrap: wrap;
   gap: 24px;
+  margin-bottom: 50px;
 }
 .item {
   width: calc((100% - 48px) / 3);
@@ -123,17 +124,9 @@ ul {
   background-color: #ef4040;
 }
 .loader {
-  font-size: 48px;
-  color: #fff;
-  display: inline-block;
-  font-family: Arial, Helvetica, sans-serif;
-  font-weight: 400;
-  position: relative;
-}
-.loader {
+  display: none;
   width: 175px;
   height: 80px;
-  display: block;
   margin: auto;
   background-image: radial-gradient(
       circle 25px at 25px 25px,
@@ -186,4 +179,21 @@ ul {
     transform: translate(-50%, 15px);
     opacity: 0;
   }
+}
+.loadMoreBtn {
+  display: none;
+  margin: 0 auto;
+  border-radius: 8px;
+  padding: 8px 16px;
+  width: 160px;
+  height: 40px;
+  background: #4e75ff;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 150%;
+  letter-spacing: 0.04em;
+  color: #fff;
+}
+.loadMoreBtn:hover {
+  background: #6c8cff;
 }
