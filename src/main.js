@@ -61,6 +61,7 @@ function getGalleryItems() {
         });
         lightbox.refresh();
       } else {
+        loader.style.display = 'none';
         iziToast.show({
           class: 'toast',
           position: 'topRight',
